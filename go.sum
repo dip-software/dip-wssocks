@@ -1507,6 +1507,8 @@ github.com/linode/linodego v1.19.0/go.mod h1:XZFR+yJ9mm2kwf6itZ6SCpu+6w3KnIevV0U
 github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3/go.mod h1:3r6x7q95whyfWQpmGZTu3gk3v2YkMi05HEzl7Tf7YEo=
 github.com/loafoe/caddy-token v0.70.1 h1:gpxqCeNcq+Tt/MplPkji9oueOj6UbK9oslPfzDI5Eos=
 github.com/loafoe/caddy-token v0.70.1/go.mod h1:xXj9Hj+225DEB7hQWfLiUzGZDdkw+YmaECPRVIRyzVU=
+github.com/loafoe/caddy-token v0.71.0 h1:c5LD2oNG1bXqoToaMNjgY6rynVxDHo0iYWFqU9hKCG4=
+github.com/loafoe/caddy-token v0.71.0/go.mod h1:xXj9Hj+225DEB7hQWfLiUzGZDdkw+YmaECPRVIRyzVU=
 github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0/go.mod h1:zJYVVT2jmtg6P3p1VtQj7WsuWi/y4VnjVBn7F8KPB3I=
 github.com/lunixbochs/vtclean v1.0.0/go.mod h1:pHhQNgMf3btfWnGBVipUOjRYhoOsdGqdm/+2c2E2WMI=
 github.com/lxn/walk v0.0.0-20210112085537-c389da54e794/go.mod h1:E23UucZGqpuUANJooIbHWCufXvOcT6E7Stq81gU+CSQ=

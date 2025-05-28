@@ -708,7 +708,7 @@ require (
 	github.com/linkedin/goavro/v2 v2.12.0 // indirect
 	github.com/linode/linodego v1.19.0 // indirect
 	github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3 // indirect
-	github.com/loafoe/caddy-token v0.70.1 // indirect
+	github.com/loafoe/caddy-token v0.71.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/lxn/walk v0.0.0-20210112085537-c389da54e794 // indirect
