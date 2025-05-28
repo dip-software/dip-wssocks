@@ -70,10 +70,14 @@ func (s *server) PreRun() error {
 			"file": s.signKeyFile,
 		}).Info("signing key read from file.")
 	}
+	// read key from environment variable if provided
+	if s.signKey == "" {
+		s.signKey = strings.TrimSpace(os.Getenv("WSSOCKS_SIGN_KEY"))
+	}
 	// check if signing key is provided
 	if s.signKey == "" {
 		log.Trace("empty singing key provided.")
-		return fmt.Errorf("signing key is required, please provide it with `-sign_key` flag")
+		return fmt.Errorf("signing key is required, please provide it with `-sign_key` flag or `WSSOCKS_SIGN_KEY` environment variable")
 	}
 	// set base url
 	if s.wsBasePath == "" {
