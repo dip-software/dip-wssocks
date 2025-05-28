@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/genshen/cmds"
@@ -29,7 +30,8 @@ func init() {
 	serverCommand.FlagSet.StringVar(&s.address, "addr", ":1088", `listen address.`)
 	serverCommand.FlagSet.StringVar(&s.wsBasePath, "ws_base_path", "/", "base path for serving websocket.")
 	serverCommand.FlagSet.BoolVar(&s.http, "http", true, `enable http and https proxy.`)
-	serverCommand.FlagSet.StringVar(&s.signKey, "sign_key", "", "signing key of API tokens.")
+	serverCommand.FlagSet.StringVar(&s.signKey, "sign-key", "", "signing key of API tokens.")
+	serverCommand.FlagSet.StringVar(&s.signKeyFile, "sign-key-file", "", "file to read the signing key from.")
 	serverCommand.FlagSet.BoolVar(&s.tls, "tls", false, "enable/disable HTTPS/TLS support of server.")
 	serverCommand.FlagSet.StringVar(&s.tlsCertFile, "tls-cert-file", "", "path of certificate file if HTTPS/tls is enabled.")
 	serverCommand.FlagSet.StringVar(&s.tlsKeyFile, "tls-key-file", "", "path of private key file if HTTPS/tls is enabled.")
@@ -49,9 +51,26 @@ type server struct {
 	tlsCertFile string // path of certificate file if HTTPS/tls is enabled.
 	tlsKeyFile  string // path of private key file if HTTPS/tls is enabled.
 	status      bool   // enable service status page
+	signKeyFile string // file to read the signing key from
 }
 
 func (s *server) PreRun() error {
+	// read signing key file if provided
+	if s.signKey == "" && s.signKeyFile != "" {
+		// read signing key from file
+		data, err := os.ReadFile(s.signKeyFile)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"file": s.signKeyFile,
+			}).Error("error reading signing key file:", err)
+			return fmt.Errorf("error reading signing key file: %w", err)
+		}
+		s.signKey = strings.TrimSpace(string(data))
+		log.WithFields(log.Fields{
+			"file": s.signKeyFile,
+		}).Info("signing key read from file.")
+	}
+	// check if signing key is provided
 	if s.signKey == "" {
 		log.Trace("empty singing key provided.")
 		return fmt.Errorf("signing key is required, please provide it with `-sign_key` flag")

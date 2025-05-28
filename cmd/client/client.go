@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -45,7 +46,8 @@ func init() {
 	clientCommand.FlagSet.BoolVar(&client.http, "http", false, `enable http and https proxy.`)
 	clientCommand.FlagSet.StringVar(&client.httpAddr, "http-addr", ":1086", `listen address of http proxy (if enabled).`)
 	clientCommand.FlagSet.StringVar(&client.remote, "remote", "", `server address and port(e.g: ws://example.com:1088).`)
-	clientCommand.FlagSet.StringVar(&client.key, "key", "", `connection key.`)
+	clientCommand.FlagSet.StringVar(&client.apiKey, "key", "", `connection key.`)
+	clientCommand.FlagSet.StringVar(&client.apiKeyFile, "key-file", "", `File to read the key from.`)
 	clientCommand.FlagSet.Var(&client.headers, "ws-header", `list of user defined http headers in websocket request. 
 (e.g: --ws-header "X-Custom-Header=some-value" --ws-header "X-Second-Header=another-value")`)
 	clientCommand.FlagSet.BoolVar(&client.skipTLSVerify, "skip-tls-verify", false, `skip verification of the server's certificate chain and host name.`)
@@ -64,7 +66,8 @@ type client struct {
 	remoteUrl     *url.URL    // url of server
 	headers       listFlags   // websocket headers passed from user.
 	remoteHeaders http.Header // parsed websocket headers (not presented in flag).
-	key           string
+	apiKey        string
+	apiKeyFile    string
 	skipTLSVerify bool
 }
 
@@ -83,6 +86,25 @@ func (c *client) PreRun() error {
 		log.Info("http(s) proxy is enabled.")
 	} else {
 		log.Info("http(s) proxy is disabled.")
+	}
+
+	// read key from file if needed
+	if c.apiKey == "" && c.apiKeyFile != "" {
+		data, err := os.ReadFile(c.apiKeyFile)
+		if err != nil {
+			return fmt.Errorf("error reading key file %s: %w", c.apiKeyFile, err)
+		}
+		c.apiKey = strings.TrimSpace(string(data))
+		if c.apiKey == "" {
+			return fmt.Errorf("key file %s is empty", c.apiKeyFile)
+		}
+		log.WithFields(log.Fields{
+			"key_file": c.apiKeyFile,
+		}).Info("read connection key from file.")
+	}
+	// check key
+	if c.apiKey == "" {
+		return fmt.Errorf("connection key is required, please provide it with `-key` or `-key-file` flag")
 	}
 
 	// check header format.
@@ -111,7 +133,7 @@ func (c *client) Run() error {
 		LocalHttpAddr:   c.httpAddr,
 		RemoteUrl:       c.remoteUrl,
 		RemoteHeaders:   c.remoteHeaders,
-		ConnectionKey:   c.key,
+		ConnectionKey:   c.apiKey,
 		SkipTLSVerify:   c.skipTLSVerify,
 	}
 	hdl := cl.NewClientHandles()
