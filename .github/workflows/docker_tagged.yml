@@ -49,7 +49,6 @@ jobs:
           images: ghcr.io/${{ github.repository }}
       
       - name: Inject tag into Dockerfile (if needed)
-        if: steps.check_component.outputs.exists == 'true'
         run: |
           if grep -q '{{TAG}}' Dockerfile; then
             sed -i "s|{{TAG}}|${{ github.ref_name }}|g" Dockerfile
@@ -57,7 +56,6 @@ jobs:
       
       - name: Build and push
         id: docker_build
-        if: steps.check_component.outputs.exists == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./
@@ -78,5 +76,4 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       
       - name: Image digest
-        if: steps.check_component.outputs.exists == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
