@@ -20,3 +20,4 @@ cmd/server/statik
 # Terraform
 .terraform/
 *.tfvars*
+*.tfstate

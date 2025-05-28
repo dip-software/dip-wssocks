@@ -32,6 +32,7 @@ resource "cloudfoundry_app" "server" {
   memory       = 128
   strategy     = "blue-green"
   instances    = var.server_instances
+  command      = "/app/app server"
 
   environment = {
     WSSOCKS_SIGNING_KEY = local.signing_key
