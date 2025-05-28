@@ -13,5 +13,5 @@ FROM alpine:latest
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 WORKDIR /app
 COPY --from=builder /build/app /app
-EXPOSE 8080
+EXPOSE 1088
 CMD ["/app/app"]
