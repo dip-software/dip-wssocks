@@ -1,9 +1,8 @@
 package server
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"flag"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -30,8 +29,7 @@ func init() {
 	serverCommand.FlagSet.StringVar(&s.address, "addr", ":1088", `listen address.`)
 	serverCommand.FlagSet.StringVar(&s.wsBasePath, "ws_base_path", "/", "base path for serving websocket.")
 	serverCommand.FlagSet.BoolVar(&s.http, "http", true, `enable http and https proxy.`)
-	serverCommand.FlagSet.BoolVar(&s.authEnable, "auth", false, `enable/disable connection authentication.`)
-	serverCommand.FlagSet.StringVar(&s.authKey, "auth_key", "", "connection key for authentication. \nIf not provided, it will generate one randomly.")
+	serverCommand.FlagSet.StringVar(&s.signKey, "sign_key", "", "signing key of API tokens.")
 	serverCommand.FlagSet.BoolVar(&s.tls, "tls", false, "enable/disable HTTPS/TLS support of server.")
 	serverCommand.FlagSet.StringVar(&s.tlsCertFile, "tls-cert-file", "", "path of certificate file if HTTPS/tls is enabled.")
 	serverCommand.FlagSet.StringVar(&s.tlsKeyFile, "tls-key-file", "", "path of private key file if HTTPS/tls is enabled.")
@@ -46,32 +44,17 @@ type server struct {
 	address     string
 	wsBasePath  string // base path for serving websocket and status page
 	http        bool   // enable http and https proxy
-	authEnable  bool   // enable authentication connection key
-	authKey     string // the connection key if authentication is enabled
+	signKey     string // the connection key if authentication is enabled
 	tls         bool   // enable/disable HTTPS/tls support of server.
 	tlsCertFile string // path of certificate file if HTTPS/tls is enabled.
 	tlsKeyFile  string // path of private key file if HTTPS/tls is enabled.
 	status      bool   // enable service status page
 }
 
-func genRandBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
 func (s *server) PreRun() error {
-	if s.authEnable && s.authKey == "" {
-		log.Trace("empty authentication key provided, now it will generate a random authentication key.")
-		b, err := genRandBytes(12)
-		if err != nil {
-			return err
-		}
-		s.authKey = strings.ToUpper(hex.EncodeToString(b))
+	if s.signKey == "" {
+		log.Trace("empty singing key provided.")
+		return fmt.Errorf("signing key is required, please provide it with `-sign_key` flag")
 	}
 	// set base url
 	if s.wsBasePath == "" {
@@ -88,7 +71,7 @@ func (s *server) PreRun() error {
 }
 
 func (s *server) Run() error {
-	config := wss.WebsocksServerConfig{EnableHttp: s.http, EnableConnKey: s.authEnable, ConnKey: s.authKey, EnableStatusPage: s.status}
+	config := wss.WebsocksServerConfig{EnableHttp: s.http, EnableConnKey: true, ConnKey: s.signKey, EnableStatusPage: s.status}
 	hc := wss.NewHubCollection()
 
 	http.Handle(s.wsBasePath, wss.NewServeWS(hc, config))
@@ -98,12 +81,9 @@ func (s *server) Run() error {
 			log.Fatal(err)
 		}
 		http.Handle("/status/", http.StripPrefix("/status", http.FileServer(statikFS)))
-		http.Handle("/api/status/", status.NewStatusHandle(hc, s.http, s.authEnable, s.wsBasePath))
+		http.Handle("/api/status/", status.NewStatusHandle(hc, s.http, true, s.wsBasePath))
 	}
 
-	if s.authEnable {
-		log.Info("connection authentication key: ", s.authKey)
-	}
 	if s.status {
 		log.Info("service status page is enabled at `/status` endpoint")
 	}

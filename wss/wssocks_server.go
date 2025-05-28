@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"nhooyr.io/websocket"
+	"github.com/loafoe/caddy-token/keys"
 )
 
 type WebsocksServerConfig struct {
@@ -27,11 +28,27 @@ func NewServeWS(hc *HubCollection, config WebsocksServerConfig) *ServerWS {
 
 func (s *ServerWS) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// check connection key
-	if s.config.EnableConnKey && r.Header.Get("Key") != s.config.ConnKey {
+	apiKey := r.Header.Get("Key")
+	verified, k, err :=  keys.VerifyAPIKey(apiKey, s.config.ConnKey)
+	if err != nil {
+		log.Error("error verifying API key:", err)
 		w.WriteHeader(401)
 		w.Write([]byte("Access denied!\n"))
 		return
 	}
+	if !verified {
+		log.Error("invalid API key")
+		w.WriteHeader(401)
+		w.Write([]byte("Access denied!\n"))
+		return
+	}
+	if k.Project != "dip" {
+		log.Error("invalid API key project:", k.Project)
+		w.WriteHeader(401)
+		w.Write([]byte("Access denied!\n"))
+		return
+	}
+	// TODO: process key Scopes to limit upstream access
 
 	wc, err := websocket.Accept(w, r, nil)
 	if err != nil {
