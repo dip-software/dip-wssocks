@@ -14,6 +14,7 @@ import (
 
 	"github.com/genshen/cmds"
 	cl "github.com/genshen/wssocks/client"
+	tools "github.com/genshen/wssocks/client/tools"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -72,16 +73,6 @@ type client struct {
 }
 
 func (c *client) PreRun() error {
-	// check remote address
-	if c.remote == "" {
-		return errors.New("empty remote address")
-	}
-	if u, err := url.Parse(c.remote); err != nil {
-		return err
-	} else {
-		c.remoteUrl = u
-	}
-
 	if c.http {
 		log.Info("http(s) proxy is enabled.")
 	} else {
@@ -105,6 +96,29 @@ func (c *client) PreRun() error {
 	// check key
 	if c.apiKey == "" {
 		return fmt.Errorf("connection key is required, please provide it with `-key` or `-key-file` flag")
+	}
+	remote, err := tools.GetGatewayFromAPIKey(c.apiKey)
+	if err != nil {
+		return fmt.Errorf("error getting remote url from api key: %w", err)
+	}
+	if c.remote == "" {
+		log.Info("remote address is not provided, using remote from api key.")
+		c.remote = remote
+	}
+	endpoint, err := tools.GetEndpointFromAPIKey(c.apiKey)
+	if err != nil {
+		return fmt.Errorf("error getting endpoint from api key: %w", err)
+	}
+	log.Info("endpoint from api key: ", endpoint)
+
+	// check remote address
+	if c.remote == "" {
+		return errors.New("empty remote address")
+	}
+	if u, err := url.Parse(c.remote); err != nil {
+		return err
+	} else {
+		c.remoteUrl = u
 	}
 
 	// check header format.
