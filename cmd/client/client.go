@@ -69,6 +69,7 @@ type client struct {
 	remoteHeaders http.Header // parsed websocket headers (not presented in flag).
 	apiKey        string
 	apiKeyFile    string
+	endpoint      string
 	skipTLSVerify bool
 }
 
@@ -102,14 +103,17 @@ func (c *client) PreRun() error {
 		return fmt.Errorf("error getting remote url from api key: %w", err)
 	}
 	if c.remote == "" {
-		log.Info("remote address is not provided, using remote from api key.")
+		log.WithField("remote", remote).Info("using remote from api key.")
 		c.remote = remote
 	}
 	endpoint, err := tools.GetEndpointFromAPIKey(c.apiKey)
 	if err != nil {
 		return fmt.Errorf("error getting endpoint from api key: %w", err)
 	}
-	log.Info("endpoint from api key: ", endpoint)
+	if endpoint != "" {
+		log.WithField("endpoint", endpoint).Info("extracted endpoint from api key")
+		c.endpoint = endpoint
+	}
 
 	// check remote address
 	if c.remote == "" {
@@ -149,6 +153,7 @@ func (c *client) Run() error {
 		RemoteHeaders:   c.remoteHeaders,
 		ConnectionKey:   c.apiKey,
 		SkipTLSVerify:   c.skipTLSVerify,
+		Endpoint:        c.endpoint,
 	}
 	hdl := cl.NewClientHandles()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute) // fixme

@@ -8,7 +8,7 @@ import (
 	"github.com/genshen/wssocks/wss"
 	"github.com/genshen/wssocks/wss/term_view"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh/terminal"
+	terminal "golang.org/x/term"
 	"golang.org/x/sync/errgroup"
 	"net"
 	"net/http"
@@ -49,6 +49,7 @@ type Options struct {
 	RemoteHeaders   http.Header // parsed websocket headers (not presented in flag).
 	ConnectionKey   string      // connection key for authentication
 	SkipTLSVerify   bool        // skip TSL verify
+	Endpoint string // Remote endpoint when in TCP direct forward mode
 }
 
 type Handles struct {
