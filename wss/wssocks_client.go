@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
@@ -176,9 +175,9 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := NewWebSocketWriterWithMutex(&wsc.ConcurrentWebSocket, proxy.Id, ctx)
 	go func() {
-		if client.endpoint != "" {
-			time.Sleep(100 * time.Millisecond) // wait for establishing connection
-		}
+		//if client.endpoint != "" {
+		//	time.Sleep(100 * time.Millisecond) // wait for establishing connection
+		//}
 		_, err := io.Copy(writer, conn)
 		if err != nil {
 			log.Error("write error: ", err)

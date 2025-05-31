@@ -22,7 +22,7 @@ variable "region" {
 
 variable "server_image" {
   type    = string
-  default = "ghcr.io/dip-software/dip-wssocks:main"
+  default = "ghcr.io/dip-software/dip-wssocks:v0.0.2"
 }
 
 variable "server_instances" {

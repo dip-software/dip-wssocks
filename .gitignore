@@ -22,6 +22,7 @@ wssocks
 .terraform/
 *.tfvars*
 *.tfstate
+*.backup
 
 # Debug
 __debug*
