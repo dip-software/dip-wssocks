@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var StoppedError = errors.New("listener stopped")
+var ErrStopped = errors.New("listener stopped")
 
 // client part of wssocks
 type Client struct {
@@ -99,7 +99,7 @@ func (client *Client) ListenAndServe(record *ConnRecord, wsc *WebSocketClient, a
 		// check stop first
 		select {
 		case <-client.stop:
-			return StoppedError
+			return ErrStopped
 		default:
 			// if the channel is still open, continue as normal
 		}

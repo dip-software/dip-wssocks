@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/segmentio/ksuid"
 	"net/http"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 	"sync"
 	"time"
+
+	"github.com/segmentio/ksuid"
+	"nhooyr.io/websocket"
+	"nhooyr.io/websocket/wsjson"
 )
 
 // WebSocketClient is a collection of proxy clients.
@@ -102,7 +103,7 @@ func (wsc *WebSocketClient) ListenIncomeMsg(readLimit int64) error {
 		// check stop first
 		select {
 		case <-ctx.Done():
-			return StoppedError
+			return ErrStopped
 		default:
 			// if the channel is still open, continue as normal
 		}
