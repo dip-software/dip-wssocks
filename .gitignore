@@ -16,8 +16,13 @@ cmd/server/statik
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 ./wssock
+./wssocks
 
 # Terraform
 .terraform/
 *.tfvars*
 *.tfstate
+
+# Debug
+__debug*
+*.swp
