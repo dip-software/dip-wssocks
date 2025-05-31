@@ -182,7 +182,7 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := NewWebSocketWriterWithMutex(&wsc.ConcurrentWebSocket, proxy.Id, ctx)
 	go func() {
-		if client.endpoint != "" {
+		if proxyType == ProxyTypeDirect {
 			<-continued // wait for server to establish connection
 		}
 		_, err := io.Copy(writer, conn)
