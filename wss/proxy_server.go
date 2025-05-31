@@ -176,7 +176,6 @@ func (e *DefaultProxyEst) establish(hub *Hub, id ksuid.KSUID, proxyType int, add
 			return err
 		}
 	case ProxyTypeDirect:
-		time.Sleep(100 * time.Millisecond) // wait for establishing connection
 		if err := hub.WriteProxyMessage(ctx, id, TagEstOk, nil); err != nil {
 			return err
 		}

@@ -148,8 +148,15 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	done := make(chan Done, 2)
 	// defer close(done)
 
+	continued := make(chan int)
+	defer close(continued)
+
 	// create a with proxy with callback func
 	proxy := wsc.NewProxy(func(id ksuid.KSUID, data ServerData) {
+		if data.Tag == TagEstOk || data.Tag == TagEstErr {
+			continued <- data.Tag
+			return
+		}
 		if _, err := conn.Write(data.Data); err != nil {
 			done <- Done{true, err}
 		}
@@ -175,9 +182,9 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := NewWebSocketWriterWithMutex(&wsc.ConcurrentWebSocket, proxy.Id, ctx)
 	go func() {
-		//if client.endpoint != "" {
-		//	time.Sleep(100 * time.Millisecond) // wait for establishing connection
-		//}
+		if client.endpoint != "" {
+			<-continued // wait for server to establish connection
+		}
 		_, err := io.Copy(writer, conn)
 		if err != nil {
 			log.Error("write error: ", err)
