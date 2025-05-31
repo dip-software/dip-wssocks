@@ -2,7 +2,8 @@ FROM golang:1.24.3 AS builder
 WORKDIR /build
 COPY go.mod .
 COPY go.sum .
-RUN go mod download
+# We vendor dependencies to speed up the build
+# RUN go mod download
 
 # Build
 COPY . .
