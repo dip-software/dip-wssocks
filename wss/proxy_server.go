@@ -8,13 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"net/http"
-	"nhooyr.io/websocket"
 	"time"
+
+	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
+	"nhooyr.io/websocket"
 )
 
 type Connector struct {
@@ -174,6 +175,10 @@ func (e *DefaultProxyEst) establish(hub *Hub, id ksuid.KSUID, proxyType int, add
 		if err := hub.WriteProxyMessage(ctx, id, TagData, []byte("HTTP/1.0 200 Connection Established\r\nProxy-agent: wssocks\r\n\r\n")); err != nil {
 			return err
 		}
+	case ProxyTypeDirect:
+		if err := hub.WriteProxyMessage(ctx, id, TagEstOk, nil); err != nil {
+			return err
+		}	
 	}
 
 	go func() {

@@ -8,6 +8,7 @@ const (
 	ProxyTypeSocks5 = iota
 	ProxyTypeHttp
 	ProxyTypeHttps
+	ProxyTypeDirect // direct connection, no proxy
 )
 
 func ProxyTypeStr(tp int) string {
@@ -18,6 +19,8 @@ func ProxyTypeStr(tp int) string {
 		return "https"
 	case ProxyTypeSocks5:
 		return "socks5"
+	case ProxyTypeDirect:
+		return "direct"
 	}
 	return "unknown"
 }

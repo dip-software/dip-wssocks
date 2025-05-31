@@ -4,27 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"sync"
+	"time"
+
+	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
 )
 
 var StoppedError = errors.New("listener stopped")
 
 // client part of wssocks
 type Client struct {
-	tcpl    *net.TCPListener
-	stop    chan interface{}
-	closed  bool
-	wgClose sync.WaitGroup // wait for closing
+	tcpl     *net.TCPListener
+	stop     chan interface{}
+	closed   bool
+	wgClose  sync.WaitGroup // wait for closing
+	endpoint string         // remote endpoint when in TCP direct forward mode
 }
 
-func NewClient() *Client {
+func NewClient(endpoint string) *Client {
 	var client Client
 	client.closed = false
 	client.stop = make(chan interface{})
+	client.endpoint = endpoint
 	return &client
 }
 
@@ -33,23 +37,30 @@ func (client *Client) Reply(conn net.Conn, enableHttp bool) ([]byte, int, string
 	var buffer [1024]byte
 	var addr string
 	var proxyType int
-
-	n, err := conn.Read(buffer[:])
-	if err != nil {
-		return nil, 0, "", err
-	}
-
-	// select a matched proxy type
-	instances := []ProxyInterface{&Socks5Client{}}
-	if enableHttp { // if http and https proxy is enabled.
-		instances = append(instances, &HttpsClient{})
-	}
+	var n int
+	var err error
 	var matchedInstance ProxyInterface = nil
-	for _, proxyInstance := range instances {
-		if proxyInstance.Trigger(buffer[:n]) {
-			matchedInstance = proxyInstance
-			break
+
+	if client.endpoint == "" {
+		n, err = conn.Read(buffer[:])
+		if err != nil {
+			return nil, 0, "", err
 		}
+
+		// select a matched proxy type
+		instances := []ProxyInterface{&Socks5Client{}}
+		if enableHttp { // if http and https proxy is enabled.
+			instances = append(instances, &HttpsClient{})
+		}
+
+		for _, proxyInstance := range instances {
+			if proxyInstance.Trigger(buffer[:n]) {
+				matchedInstance = proxyInstance
+				break
+			}
+		}
+	} else {
+		matchedInstance = &DirectClient{client.endpoint} // if endpoint is set, it means we are in direct forward mode
 	}
 
 	if matchedInstance == nil {
@@ -103,11 +114,18 @@ func (client *Client) ListenAndServe(record *ConnRecord, wsc *WebSocketClient, a
 			conn := c.(*net.TCPConn)
 			// defer c.Close()
 			defer conn.Close()
+
 			// In reply, we can get proxy type, target address and first send data.
-			firstSendData, proxyType, addr, err := client.Reply(conn, enableHttp)
+			var firstSendData []byte
+			var proxyType int
+			var addr string
+			var err error
+
+			firstSendData, proxyType, addr, err = client.Reply(conn, enableHttp)
 			if err != nil {
 				log.Error("reply error: ", err)
 			}
+
 			client.wgClose.Add(1)
 			defer client.wgClose.Done()
 
@@ -147,8 +165,8 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	// tell server to establish connection
 	if err := proxy.Establish(wsc, firstSendData, proxyType, addr); err != nil {
 		wsc.RemoveProxy(proxy.Id)
-        err := wsc.TellClose(proxy.Id)
-        if err != nil {
+		err := wsc.TellClose(proxy.Id)
+		if err != nil {
 			log.Error("close error", err)
 		}
 		return err
@@ -158,11 +176,14 @@ func (client *Client) transData(wsc *WebSocketClient, conn *net.TCPConn, firstSe
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := NewWebSocketWriterWithMutex(&wsc.ConcurrentWebSocket, proxy.Id, ctx)
 	go func() {
+		if client.endpoint != "" {
+			time.Sleep(100 * time.Millisecond) // wait for establishing connection
+		}
 		_, err := io.Copy(writer, conn)
 		if err != nil {
 			log.Error("write error: ", err)
 		}
-        done <- Done{true, err}
+		done <- Done{true, err}
 	}()
 	defer writer.CloseWsWriter(cancel) // cancel data writing
 

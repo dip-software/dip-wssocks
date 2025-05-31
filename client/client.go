@@ -246,7 +246,7 @@ func (hdl *Handles) StartClient(c *Options, once *sync.Once) {
 	}
 
 	// start listen for socks5 and https connection.
-	hdl.cl = wss.NewClient()
+	hdl.cl = wss.NewClient(c.Endpoint)
 	hdl.eg.Go(func() error {
 		defer once.Do(closeAll)
 		if err := hdl.cl.ListenAndServe(record, hdl.wsc, c.LocalSocks5Addr, c.HttpEnabled, func() {
