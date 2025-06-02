@@ -97,7 +97,7 @@ func (c *client) PreRun() error {
 	}
 	// read from environment variable if needed
 	if c.apiKey == "" {
-		if envKey := os.Getenv("WSSOCKS_API_KEY"); envKey != "" {
+		if envKey := strings.TrimSpace(os.Getenv("WSSOCKS_API_KEY")); envKey != "" {
 			c.apiKey = envKey
 			log.Info("read connection key from environment variable WSSOCKS_API_KEY.")
 		}
