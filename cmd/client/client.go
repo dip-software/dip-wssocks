@@ -15,6 +15,7 @@ import (
 	"github.com/genshen/cmds"
 	cl "github.com/genshen/wssocks/client"
 	tools "github.com/genshen/wssocks/client/tools"
+	"github.com/genshen/wssocks/cmd/client/health"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -94,6 +95,13 @@ func (c *client) PreRun() error {
 			"key_file": c.apiKeyFile,
 		}).Info("read connection key from file.")
 	}
+	// read from environment variable if needed
+	if c.apiKey == "" {
+		if envKey := os.Getenv("WSSOCKS_API_KEY"); envKey != "" {
+			c.apiKey = envKey
+			log.Info("read connection key from environment variable WSSOCKS_API_KEY.")
+		}
+	}
 	// check key
 	if c.apiKey == "" {
 		return fmt.Errorf("connection key is required, please provide it with `-key` or `-key-file` flag")
@@ -172,6 +180,8 @@ func (c *client) Run() error {
 	if err := hdl.NegotiateVersion(ctx, c.remote); err != nil {
 		return err
 	}
+	// start health server
+	health.StartServer(8091)
 
 	var once sync.Once
 	hdl.StartClient(&options, &once)

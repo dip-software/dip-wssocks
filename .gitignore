@@ -27,3 +27,4 @@ wssocks
 # Debug
 __debug*
 *.swp
+secret.yaml
