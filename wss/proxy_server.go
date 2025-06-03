@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 	"nhooyr.io/websocket"
 )
 

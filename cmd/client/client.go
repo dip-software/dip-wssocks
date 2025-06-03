@@ -16,7 +16,7 @@ import (
 	cl "github.com/genshen/wssocks/client"
 	tools "github.com/genshen/wssocks/client/tools"
 	"github.com/genshen/wssocks/cmd/client/health"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 )
 
 const CommandNameClient = "client"

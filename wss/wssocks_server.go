@@ -2,7 +2,7 @@ package wss
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 	"io"
 	"net/http"
 	"nhooyr.io/websocket"

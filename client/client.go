@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/genshen/wssocks/wss"
 	"github.com/genshen/wssocks/wss/term_view"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 	terminal "golang.org/x/term"
 	"golang.org/x/sync/errgroup"
 	"net"

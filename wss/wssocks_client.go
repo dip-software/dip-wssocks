@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 )
 
 var ErrStopped = errors.New("listener stopped")

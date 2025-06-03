@@ -9,7 +9,7 @@ import (
 	"net/url"
 
 	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 )
 
 type HttpClient struct {

@@ -1,7 +1,7 @@
 package wss
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/genshen/wssocks/wss/logger"
 	"io"
 	"sync"
 )
@@ -48,7 +48,7 @@ func (cr *ConnRecord) Update(status ConnStatus) {
 				cr.Addresses[status.Address] = size - 1
 			}
 		} else {
-			logrus.Fatal("bad connection size")
+			logger.Fatal("bad connection size")
 		}
 	}
 	// update log

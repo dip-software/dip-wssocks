@@ -12,7 +12,7 @@ import (
 	"github.com/genshen/wssocks/wss"
 	"github.com/genshen/wssocks/wss/status"
 	"github.com/rakyll/statik/fs"
-	log "github.com/sirupsen/logrus"
+	log "github.com/genshen/wssocks/wss/logger"
 )
 
 var serverCommand = &cmds.Command{
