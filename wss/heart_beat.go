@@ -2,9 +2,10 @@ package wss
 
 import (
 	"context"
+	"time"
+
 	"github.com/segmentio/ksuid"
 	"nhooyr.io/websocket/wsjson"
-	"time"
 )
 
 type HeartBeat struct {
@@ -50,5 +51,4 @@ func (hb *HeartBeat) Start(ctx context.Context, writeTimeout time.Duration) erro
 			}
 		}
 	}
-	return nil
 }
