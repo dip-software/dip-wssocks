@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dip-forwarder-server-ingress
+  labels:
+    app.kubernetes.io/name: dip-forwarder-server-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "dip-forwarder-server-service"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: dip-forwarder-server.obs-us-east-ct.hsp.philips.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dip-forwarder-server-service
+                port:
+                  number: 1088
+  tls:
+  - hosts:
+    - dip-forwarder-server.obs-us-east-ct.hsp.philips.com
+    secretName: dip-forwarder-tls-cert

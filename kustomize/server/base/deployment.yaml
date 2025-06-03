@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dip-forwarder-server
+  labels:
+    app.kubernetes.io/name: dip-forwarder-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dip-forwarder-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dip-forwarder-server
+    spec:
+      containers:
+        - name: dip-forwarder-server
+          securityContext:
+            {}
+          image: ghcr.io/dip-software/dip-wssocks:v0.0.8
+          command: ["/app/app", "server"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          imagePullPolicy: Always
+          env:
+            - name: WSSOCKS_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dip-forwarder-api-signing-key
+                  key: key
+          ports:
+            - name: ws
+              containerPort: 1088
+              protocol: TCP
+            - name: health
+              containerPort: 1088
+              protocol: TCP

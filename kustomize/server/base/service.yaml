@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dip-forwarder-server-service
+  labels:
+    app.kubernetes.io/name: dip-forwarder-server-service
+spec:
+  ports:
+    - port: 1088
+      targetPort: 1088
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: dip-forwarder-server
