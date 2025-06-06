@@ -10,8 +10,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/rakyll/statik v0.1.7
 	github.com/segmentio/ksuid v1.0.4
-	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/crypto v0.38.0
 	golang.org/x/sync v0.14.0
 	golang.org/x/term v0.32.0
 	nhooyr.io/websocket v1.8.17
