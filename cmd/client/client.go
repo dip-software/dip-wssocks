@@ -129,7 +129,13 @@ func (c *client) PreRun() error {
 	if len(endpoints) == 0 {
 		return fmt.Errorf("no endpoint found in api key, please check your api key")
 	}
-	log.WithField("endpoints", endpoints).Info("extracted endpoint from api key")
+	for i, endpoint := range endpoints {
+		log.WithFields(log.Fields{
+			"index":    i,
+			"endpoint": endpoint,
+		}).Info("found endpoint")
+	}
+
 	c.endpoint = endpoints[0] // use the first endpoint as default
 
 	// check remote address
