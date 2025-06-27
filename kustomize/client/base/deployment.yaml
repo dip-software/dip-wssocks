@@ -18,7 +18,7 @@ spec:
         - name: dip-forwarder-client
           securityContext:
             {}
-          image: ghcr.io/dip-software/dip-wssocks:v0.0.8
+          image: ghcr.io/dip-software/dip-wssocks:v0.2.0
           command: ["/app/app", "client", "-addr", ":5432"]
           resources:
             requests:
