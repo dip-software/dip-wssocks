@@ -41,6 +41,13 @@ resource "cloudfoundry_app" "server" {
   routes {
     route = cloudfoundry_route.server.id
   }
+
+  dynamic "routes" {
+    for_each = cloudfoundry_route.pl
+    content {
+      route = routes.value.id
+    }
+  }
 }
 
 resource "cloudfoundry_route" "server" {
@@ -48,3 +55,11 @@ resource "cloudfoundry_route" "server" {
   space    = data.cloudfoundry_space.space.id
   hostname = "server-${random_pet.instance.id}"
 }
+
+resource "cloudfoundry_route" "pl" {
+  count    = var.pl_host != "" ? 1 : 0
+  domain   = data.cloudfoundry_domain.pl.id
+  space    = data.cloudfoundry_space.space.id
+  hostname = var.pl_host
+}
+

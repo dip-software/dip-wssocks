@@ -7,6 +7,10 @@ data "cloudfoundry_domain" "internal" {
   name = "apps.internal"
 }
 
+data "cloudfoundry_domain" "pl" {
+  name = "cf.pl.hsdp.io"
+}
+
 data "cloudfoundry_domain" "public" {
   name = data.hsdp_config.cf.domain
 }

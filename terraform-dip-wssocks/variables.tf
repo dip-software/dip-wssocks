@@ -12,7 +12,7 @@ variable "cf_org_name" {
 
 variable "cf_space_name" {
   type    = string
-  default = "test"
+  default = "development"
 }
 
 variable "region" {
@@ -30,8 +30,15 @@ variable "server_instances" {
   default = 2
 }
 
+variable "pl_host" {
+  type        = string
+  description = "PrivateLink CF host. Default is empty i.e. no mapping"
+  default     = ""
+}
+
+
 variable "signing_key" {
-  type    = string
-  default = ""
+  type      = string
+  default   = ""
   sensitive = true
 }
