@@ -122,14 +122,15 @@ func (c *client) PreRun() error {
 		log.WithField("remote", remote).Info("using remote from api key.")
 		c.remote = remote
 	}
-	endpoint, err := tools.GetEndpointFromAPIKey(c.apiKey)
+	endpoints, err := tools.GetAllEndpointsFromAPIKey(c.apiKey)
 	if err != nil {
 		return fmt.Errorf("error getting endpoint from api key: %w", err)
 	}
-	if endpoint != "" {
-		log.WithField("endpoint", endpoint).Info("extracted endpoint from api key")
-		c.endpoint = endpoint
+	if len(endpoints) == 0 {
+		return fmt.Errorf("no endpoint found in api key, please check your api key")
 	}
+	log.WithField("endpoints", endpoints).Info("extracted endpoint from api key")
+	c.endpoint = endpoints[0] // use the first endpoint as default
 
 	// check remote address
 	if c.remote == "" {
