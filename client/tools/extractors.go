@@ -61,6 +61,30 @@ func GetEndpointFromAPIKey(apiToken string) (string, error) {
 	return "", nil
 }
 
+func GetAllEndpointsFromAPIKey(apiToken string) ([]string, error) {
+	// Call VerifyAPIKey to extract the key structure
+	_, key, err := keys.VerifyAPIKey(apiToken, "not-applicable")
+	if key == nil {
+		return nil, err
+	}
+
+	// No need to check validation (verified is ignored)
+	// Just extract the endpoint information from the scopes
+	var endpoints []string
+	// Look for scopes that start with "ep:"
+	for _, scope := range key.Scopes {
+		if strings.HasPrefix(scope, "ep:") {
+			// Extract the endpoint by removing the "ep:" prefix
+			endpoints = append(endpoints, strings.TrimPrefix(scope, "ep:"))
+		}
+	}
+	// Return the list of endpoints
+	if len(endpoints) == 0 {
+		return nil, nil // No endpoints found
+	}
+	return endpoints, nil
+}
+
 func GetPrivateLinkFromAPIKey(apiToken string) (string, error) {
 	// Call VerifyAPIKey to extract the key structure
 	_, key, err := keys.VerifyAPIKey(apiToken, "not-applicable")
