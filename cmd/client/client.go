@@ -55,6 +55,7 @@ func init() {
 	clientCommand.FlagSet.BoolVar(&client.skipTLSVerify, "skip-tls-verify", false, `skip verification of the server's certificate chain and host name.`)
 	clientCommand.FlagSet.BoolVar(&client.usePrivateLink, "use-private-link", false, `use private link if available.`)
 	clientCommand.FlagSet.BoolVar(&client.ignoreEndpoints, "ignore-endpoints", false, `ignore endpoints from API key, default is false.`)
+	clientCommand.FlagSet.IntVar(&client.useEndpointIndex, "endpoint-index", 0, `index of endpoint to use, default is 0.`)
 
 	clientCommand.FlagSet.Usage = clientCommand.Usage // use default usage provided by cmds.Command.
 	clientCommand.Runner = &client
@@ -63,19 +64,20 @@ func init() {
 }
 
 type client struct {
-	address         string      // local listening address
-	http            bool        // enable http and https proxy
-	httpAddr        string      // listen address of http and https(if it is enabled)
-	remote          string      // string usr of server
-	remoteUrl       *url.URL    // url of server
-	headers         listFlags   // websocket headers passed from user.
-	remoteHeaders   http.Header // parsed websocket headers (not presented in flag).
-	apiKey          string
-	apiKeyFile      string
-	endpoint        string
-	skipTLSVerify   bool
-	usePrivateLink  bool // use private link, default is false
-	ignoreEndpoints bool // ignore endpoints from API key, default is false
+	address          string      // local listening address
+	http             bool        // enable http and https proxy
+	httpAddr         string      // listen address of http and https(if it is enabled)
+	remote           string      // string usr of server
+	remoteUrl        *url.URL    // url of server
+	headers          listFlags   // websocket headers passed from user.
+	remoteHeaders    http.Header // parsed websocket headers (not presented in flag).
+	apiKey           string
+	apiKeyFile       string
+	endpoint         string
+	skipTLSVerify    bool
+	usePrivateLink   bool // use private link, default is false
+	ignoreEndpoints  bool // ignore endpoints from API key, default is false
+	useEndpointIndex int  // index of endpoint to use, default is 0
 }
 
 func (c *client) PreRun() error {
@@ -137,10 +139,15 @@ func (c *client) PreRun() error {
 			"endpoint": endpoint,
 		}).Info("found endpoint")
 	}
-	if !c.ignoreEndpoints {
-		c.endpoint = endpoints[0] // use the first endpoint as default
+	if !c.ignoreEndpoints && c.useEndpointIndex < len(endpoints) {
+		c.endpoint = endpoints[c.useEndpointIndex] // use the first endpoint as default
 	} else {
 		log.WithField("ignore_endpoints", c.ignoreEndpoints).Info("ignoring endpoints from API key, going into full SOCKS5 proxy mode.")
+	}
+	if c.endpoint != "" {
+		log.WithFields(log.Fields{
+			"endpoint": c.endpoint,
+		}).Info("using endpoint from API key.")
 	}
 	// check remote address
 	if c.remote == "" {
