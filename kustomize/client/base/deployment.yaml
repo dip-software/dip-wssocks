@@ -19,7 +19,7 @@ spec:
           securityContext:
             {}
           image: ghcr.io/dip-software/dip-wssocks:v0.2.0
-          command: ["/app/app", "client", "-addr", ":5432"]
+          command: ["/app/app", "client", "-addr", ":5432", "-use-private-link"]
           resources:
             requests:
               cpu: 100m
