@@ -53,6 +53,7 @@ func init() {
 	clientCommand.FlagSet.Var(&client.headers, "ws-header", `list of user defined http headers in websocket request. 
 (e.g: --ws-header "X-Custom-Header=some-value" --ws-header "X-Second-Header=another-value")`)
 	clientCommand.FlagSet.BoolVar(&client.skipTLSVerify, "skip-tls-verify", false, `skip verification of the server's certificate chain and host name.`)
+	clientCommand.FlagSet.BoolVar(&client.usePrivateLink, "use-private-link", false, `use private link if available.`)
 
 	clientCommand.FlagSet.Usage = clientCommand.Usage // use default usage provided by cmds.Command.
 	clientCommand.Runner = &client
@@ -61,17 +62,18 @@ func init() {
 }
 
 type client struct {
-	address       string      // local listening address
-	http          bool        // enable http and https proxy
-	httpAddr      string      // listen address of http and https(if it is enabled)
-	remote        string      // string usr of server
-	remoteUrl     *url.URL    // url of server
-	headers       listFlags   // websocket headers passed from user.
-	remoteHeaders http.Header // parsed websocket headers (not presented in flag).
-	apiKey        string
-	apiKeyFile    string
-	endpoint      string
-	skipTLSVerify bool
+	address        string      // local listening address
+	http           bool        // enable http and https proxy
+	httpAddr       string      // listen address of http and https(if it is enabled)
+	remote         string      // string usr of server
+	remoteUrl      *url.URL    // url of server
+	headers        listFlags   // websocket headers passed from user.
+	remoteHeaders  http.Header // parsed websocket headers (not presented in flag).
+	apiKey         string
+	apiKeyFile     string
+	endpoint       string
+	skipTLSVerify  bool
+	usePrivateLink bool // use private link, default is false
 }
 
 func (c *client) PreRun() error {
@@ -109,6 +111,12 @@ func (c *client) PreRun() error {
 	remote, err := tools.GetGatewayFromAPIKey(c.apiKey)
 	if err != nil {
 		return fmt.Errorf("error getting remote url from api key: %w", err)
+	}
+	// PrivateLink is used only if the flag is set and the private link is available.
+	privateLink, _ := tools.GetPrivateLinkFromAPIKey(c.apiKey)
+	if c.usePrivateLink && privateLink != "" {
+		log.WithField("private_link", privateLink).Info("using PrivateLink from api key.")
+		c.remote = privateLink
 	}
 	if c.remote == "" {
 		log.WithField("remote", remote).Info("using remote from api key.")

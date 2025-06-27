@@ -27,7 +27,7 @@ func GetGatewayFromAPIKey(apiToken string) (string, error) {
 	for _, scope := range key.Scopes {
 		if strings.HasPrefix(scope, "gw:") {
 			// Extract the gateway by removing the "gw:" prefix
-			return "wss://"+strings.TrimPrefix(scope, "gw:"), nil
+			return "wss://" + strings.TrimPrefix(scope, "gw:"), nil
 		}
 	}
 
@@ -58,5 +58,27 @@ func GetEndpointFromAPIKey(apiToken string) (string, error) {
 	}
 
 	// Return empty string if no endpoint found
+	return "", nil
+}
+
+func GetPrivateLinkFromAPIKey(apiToken string) (string, error) {
+	// Call VerifyAPIKey to extract the key structure
+	_, key, err := keys.VerifyAPIKey(apiToken, "not-applicable")
+	if key == nil {
+		return "", err
+	}
+
+	// No need to check validation (verified is ignored)
+	// Just extract the private link information from the scopes
+
+	// Look for a scope that starts with "pl:"
+	for _, scope := range key.Scopes {
+		if strings.HasPrefix(scope, "pl:") {
+			// Extract the private link by removing the "pl:" prefix
+			return "wss://" + strings.TrimPrefix(scope, "pl:"), nil
+		}
+	}
+
+	// Return empty string if no private link found
 	return "", nil
 }
