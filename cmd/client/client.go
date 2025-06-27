@@ -54,6 +54,7 @@ func init() {
 (e.g: --ws-header "X-Custom-Header=some-value" --ws-header "X-Second-Header=another-value")`)
 	clientCommand.FlagSet.BoolVar(&client.skipTLSVerify, "skip-tls-verify", false, `skip verification of the server's certificate chain and host name.`)
 	clientCommand.FlagSet.BoolVar(&client.usePrivateLink, "use-private-link", false, `use private link if available.`)
+	clientCommand.FlagSet.BoolVar(&client.ignoreEndpoints, "ignore-endpoints", false, `ignore endpoints from API key, default is false.`)
 
 	clientCommand.FlagSet.Usage = clientCommand.Usage // use default usage provided by cmds.Command.
 	clientCommand.Runner = &client
@@ -62,18 +63,19 @@ func init() {
 }
 
 type client struct {
-	address        string      // local listening address
-	http           bool        // enable http and https proxy
-	httpAddr       string      // listen address of http and https(if it is enabled)
-	remote         string      // string usr of server
-	remoteUrl      *url.URL    // url of server
-	headers        listFlags   // websocket headers passed from user.
-	remoteHeaders  http.Header // parsed websocket headers (not presented in flag).
-	apiKey         string
-	apiKeyFile     string
-	endpoint       string
-	skipTLSVerify  bool
-	usePrivateLink bool // use private link, default is false
+	address         string      // local listening address
+	http            bool        // enable http and https proxy
+	httpAddr        string      // listen address of http and https(if it is enabled)
+	remote          string      // string usr of server
+	remoteUrl       *url.URL    // url of server
+	headers         listFlags   // websocket headers passed from user.
+	remoteHeaders   http.Header // parsed websocket headers (not presented in flag).
+	apiKey          string
+	apiKeyFile      string
+	endpoint        string
+	skipTLSVerify   bool
+	usePrivateLink  bool // use private link, default is false
+	ignoreEndpoints bool // ignore endpoints from API key, default is false
 }
 
 func (c *client) PreRun() error {
@@ -136,8 +138,10 @@ func (c *client) PreRun() error {
 		}).Info("found endpoint")
 	}
 
-	c.endpoint = endpoints[0] // use the first endpoint as default
-
+	log.WithField("endpoints", endpoints).Info("extracted endpoint from api key")
+	if !c.ignoreEndpoints {
+		c.endpoint = endpoints[0] // use the first endpoint as default
+	}
 	// check remote address
 	if c.remote == "" {
 		return errors.New("empty remote address")
