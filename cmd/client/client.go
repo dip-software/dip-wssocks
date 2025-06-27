@@ -137,10 +137,10 @@ func (c *client) PreRun() error {
 			"endpoint": endpoint,
 		}).Info("found endpoint")
 	}
-
-	log.WithField("endpoints", endpoints).Info("extracted endpoint from api key")
 	if !c.ignoreEndpoints {
 		c.endpoint = endpoints[0] // use the first endpoint as default
+	} else {
+		log.WithField("ignore_endpoints", c.ignoreEndpoints).Info("ignoring endpoints from API key, going into full SOCKS5 proxy mode.")
 	}
 	// check remote address
 	if c.remote == "" {
