@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dip-forwarder-client
+spec:
+  template:
+    spec:
+      containers:
+        - name: dip-forwarder-client
+          command: ["/app/app", "client", "-addr", ":5432", "-use-private-link"]
